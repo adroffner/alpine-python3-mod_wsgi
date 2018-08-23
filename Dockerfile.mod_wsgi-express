@@ -1,0 +1,61 @@
+# DO NOT USE - DO NOT USE - DO NOT USE - DO NOT USE - DO NOT USE - DO NOT USE -
+# mod_wsgi-express has a segmentation fault problem.
+# =============================================================================
+# Alpine Linux - Python 3 and Apache/MOD_WSGI (See mod_wsgi-express)
+# =============================================================================
+# alpine lnux has very up-to-date python3 and it can be used as the base.
+# =============================================================================
+FROM python:3.6.6-alpine
+
+# Report short python version, e.g. "3.6" for mod_wsgi build
+# =============================================================================
+ENV PYTHON_VERSION=3.6
+
+# HTTP Proxy Settings
+ENV http_proxy="http://one.proxy.att.com:8080"
+ENV https_proxy="http://one.proxy.att.com:8080"
+ENV HTTP_PROXY="http://one.proxy.att.com:8080"
+ENV HTTPS_PROXY="http://one.proxy.att.com:8080"
+
+USER root
+
+# Add apache2 packages (alpine package manager apk)
+# =============================================================================
+RUN apk --update --no-cache add apache2 apache2-dev \
+	wget ca-certificates make gcc musl-dev
+
+# Add mod_wsgi-express
+# =============================================================================
+RUN /usr/local/bin/pip3 install --no-binary "mod_wsgi" mod_wsgi
+
+# Set Apache2 Configurations
+# =============================================================================
+# Create PID file directory for /run/apache2/httpd.pid
+RUN mkdir -p /run/apache2
+
+# Set Servername to something.
+#RUN sed -i -r 's@#Servername.*@Servername wsgi@i' /etc/apache2/httpd.conf
+
+# Direct access and error logs to stderr for Docker.
+#RUN sed -i -r 's@(CustomLog .*)@\1\nTransferLog /dev/stderr@i' /etc/apache2/httpd.conf
+#RUN sed -i -r 's@Errorlog .*@Errorlog /dev/stderr@i' /etc/apache2/httpd.conf
+
+# "apache" runs a sample "hello world" WSGI script.
+# =============================================================================
+WORKDIR /home/apache
+COPY ./hello.wsgi ./hello.wsgi
+
+# Start an "application container"
+EXPOSE 8001
+ENTRYPOINT /usr/local/bin/mod_wsgi-express start-server hello.wsgi \
+    --user apache --maximum-requests=250 \
+    --access-log \
+    --access-log-format "[hello-world][%>s] %h %l %u %b \"%{Referer}i\" \"%{User-agent}i\" \"%r\"" \
+    --error-log-format  "[hello-world][%l] %M" \
+    --log-to-terminal --log-level DEBUG \
+    --host 0.0.0.0 --port 8001
+
+# =============================================================================
+# Clean up the package index.
+# =============================================================================
+RUN rm -rf /var/cache/apk/*
