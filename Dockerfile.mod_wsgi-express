@@ -12,10 +12,10 @@ FROM python:3.6.6-alpine
 ENV PYTHON_VERSION=3.6
 
 # HTTP Proxy Settings
-ENV http_proxy="http://one.proxy.att.com:8080"
-ENV https_proxy="http://one.proxy.att.com:8080"
-ENV HTTP_PROXY="http://one.proxy.att.com:8080"
-ENV HTTPS_PROXY="http://one.proxy.att.com:8080"
+ENV http_proxy="http://one.proxy.example.com:8080"
+ENV https_proxy="http://one.proxy.example.com:8080"
+ENV HTTP_PROXY="http://one.proxy.example.com:8080"
+ENV HTTPS_PROXY="http://one.proxy.example.com:8080"
 
 USER root
 
